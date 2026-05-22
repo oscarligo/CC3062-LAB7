@@ -2,10 +2,10 @@ export type Operator = '+' | '-' | '*' | '/' | '%' | null
 
 // Estado de la calculadora
 export interface CalculatorState {
-    displayValue: string // El valor que   se muestra en la pantalla
-    previousValue: string | null // El valor almacenado para la operación anterior
-    operator: Operator  // El operador seleccionado actualmente
-    waitingForNewValue: boolean // Indica si se espera que el usuario ingrese un nuevo valor después de seleccionar un operador
+    displayValue: string // El valor que se muestra en la pantalla
+    previousValue: string | null // Valor de la peración anterior.
+    operator: Operator  // El operador seleccionado actualmente.
+    waitingForNewValue: boolean // Si se espera una nueva entrada.
 }
 
 export interface CalculatorHandlers {

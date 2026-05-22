@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 interface DisplayProps {
     value: string;
@@ -9,5 +9,5 @@ export const Display: React.FC<DisplayProps> = ({ value }) => {
         <div className="calculator-display">
             {value}
         </div>
-    );
-};
+    )
+}

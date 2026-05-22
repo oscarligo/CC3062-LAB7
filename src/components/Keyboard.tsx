@@ -1,6 +1,6 @@
-import React from 'react';
-import type { CalculatorHandlers } from '../calculator/types';
-import { keypad } from '../calculator/keypad'; 
+import React from 'react'
+import type { CalculatorHandlers } from '../calculator/types'
+import { keypad } from '../calculator/keypad' 
 
 interface KeyboardProps {handlers: CalculatorHandlers}
 
@@ -15,5 +15,5 @@ export const Keyboard: React.FC<KeyboardProps> = ({ handlers }) => {
                     </button>
                 ))}
             </div>
-        );
-};
+        )
+}
