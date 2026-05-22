@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import type { CalculatorState, Operator } from './types';
-import { calculate } from './utils';
+import type { CalculatorState, CalculatorHandlers, Operator } from './types';
+import { calculate as executeCalculation } from './utils';
 
-export const useCalculator = () => {
+export const useCalculator = (): CalculatorState & CalculatorHandlers => {
     const [state, setState] = useState<CalculatorState>({
         displayValue: '0',
         previousValue: null,
@@ -11,38 +11,103 @@ export const useCalculator = () => {
     });
 
     const inputDigit = (digit: string) => {
-        setState((prev) => ({
-        ...prev,
-        displayValue: prev.displayValue === '0' || prev.waitingForNewValue 
-            ? digit 
-            : prev.displayValue + digit,
-        waitingForNewValue: false,
-        }));
+
+        // Prev es el valor antiguo del estado. 
+        setState((prev) => {
+        const isError = prev.displayValue === 'ERROR';
+        const isReset = prev.displayValue === '0' || prev.waitingForNewValue || isError;
+        const currentDisplay = isReset ? '' : prev.displayValue;
+
+        if (currentDisplay.length >= 9 && !prev.waitingForNewValue) {
+            return prev;
+        }
+
+        if (digit === '.') {
+
+            // Que no haya un punto ya presente. 
+            if (prev.displayValue.includes('.') && !prev.waitingForNewValue && !isError) {
+            return prev;
+            }
+            // No se puede agregar un punto si ya hay 8 caracteres
+            if (currentDisplay.length >= 8 && !prev.waitingForNewValue) {
+            return prev; 
+            }
+
+            return {
+            ...prev,
+            displayValue: isReset ? '0.' : currentDisplay + '.',
+            waitingForNewValue: false,
+            };
+        }
+
+        return {
+            ...prev,
+            displayValue: currentDisplay + digit,
+            waitingForNewValue: false,
+        };
+        });
     };
 
     const handleOperator = (nextOperator: Operator) => {
-        const { displayValue, previousValue, operator } = state;
-        const inputValue = parseFloat(displayValue);
+        if (state.displayValue === 'ERROR') return;
 
-        if (previousValue === null) {
-        setState({
-            displayValue,
-            previousValue: displayValue,
-            operator: nextOperator,
-            waitingForNewValue: true,
-        });
+        if (nextOperator === null) {
+        calculate();
         return;
         }
 
-        const currentResult = calculate(parseFloat(previousValue), inputValue, operator);
+        setState((prev) => {
+        const inputValue = parseFloat(prev.displayValue);
 
-        setState({
-        displayValue: String(currentResult),
-        previousValue: nextOperator === null ? null : String(currentResult),
-        operator: nextOperator,
-        waitingForNewValue: true,
+        // Se actualiza el operador si se presiona un operador diferente sin ingresar un nuevo valor
+        if (prev.operator && prev.waitingForNewValue) {
+            return { ...prev, operator: nextOperator };
+        }
+
+        // Si no hay valor previo, se almacena el valor actual y el operador
+        if (prev.previousValue === null) {
+            return {
+            ...prev,
+            previousValue: prev.displayValue,
+            operator: nextOperator,
+            waitingForNewValue: true,
+            };
+        }
+
+        const currentResult = executeCalculation(
+            parseFloat(prev.previousValue),
+            inputValue,
+            prev.operator
+        );
+
+        return {
+            displayValue: currentResult,
+            previousValue: currentResult === 'ERROR' ? null : currentResult,
+            operator: currentResult === 'ERROR' ? null : nextOperator,
+            waitingForNewValue: true,
+        };
         });
-  };
+    };
+
+    const calculate = () => {
+        setState((prev) => {
+        const { previousValue, displayValue, operator } = prev;
+        if (operator === null || previousValue === null) return prev;
+
+        const resultStr = executeCalculation(
+            parseFloat(previousValue),
+            parseFloat(displayValue),
+            operator
+        );
+
+        return {
+            displayValue: resultStr,
+            previousValue: null,
+            operator: null,
+            waitingForNewValue: true,
+        };
+        });
+    };
 
     const clearAll = () => {
         setState({
@@ -53,10 +118,24 @@ export const useCalculator = () => {
         });
     };
 
+    const deleteDigit = () => {
+        setState((prev) => {
+        if (prev.waitingForNewValue || prev.displayValue === 'ERROR') return prev;
+        
+        const nextDisplay = prev.displayValue.slice(0, -1);
+        return {
+            ...prev,
+            displayValue: nextDisplay === '' ? '0' : nextDisplay,
+        };
+        });
+    };
+
     return {
-        displayValue: state.displayValue,
+        ...state,
         inputDigit,
         handleOperator,
+        calculate,
         clearAll,
+        deleteDigit,
     };
 };
