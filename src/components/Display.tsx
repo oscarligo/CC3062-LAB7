@@ -6,7 +6,7 @@ interface DisplayProps {
 
 export const Display: React.FC<DisplayProps> = ({ value }) => {
     return (
-        <div className="calculator-display">
+        <div className="calculator-display" data-testid="display">
             {value}
         </div>
     )
