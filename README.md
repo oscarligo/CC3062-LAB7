@@ -46,6 +46,12 @@ La lógica también limita resultados y entradas a 9 caracteres, incluyendo deci
 
 ## Comandos para tests, lint y stories
 
+## Primero
+
+```bash
+npm install
+```
+
 ## Linter
 
 ```bash
