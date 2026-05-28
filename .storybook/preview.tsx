@@ -1,6 +1,6 @@
 import type { Preview } from '@storybook/react-vite'
 // Ignore missing type declarations for CSS side-effect import in Storybook
-// @ts-ignore
+// @ts-expect-error - This import is necessary to apply global styles in Storybook
 import '../src/styles.css'
 
 const preview: Preview = {
